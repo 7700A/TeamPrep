@@ -17,6 +17,7 @@ brain Brain;
  motor LB  (PORT11, ratio6_1, false);
  motor RF  (PORT9, ratio6_1, true);
  motor RB  (PORT20, ratio6_1, true);
+ inertial gyr (PORT8);
 competition Competition;
 float D = 3.25;
 float G = 0.6;
@@ -31,9 +32,9 @@ void drawOnScreen () {
 Brain.Screen.print("The champions have risen");
 Brain.Screen.printAt(60, 68, "Henry is King!!!!");
 Brain.Screen.printAt(300, 68,  "Tianrui is King!!!!");
-Brain.Screen.printAt(60, 203,  "Tianrui is King!!!!");
+Brain.Screen.printAt(60, 203,  "Bradan:) is King!!!!");
 Brain.Screen.printAt(300, 203,  "Henry is King!!!!");
-Brain.Screen.printAt(160, 135,  "Soryra has fallen!!!!");
+Brain.Screen.printAt(160, 135,  "Soryra has always fallen!!!!");
 
 }
 int drawShape(){
@@ -60,6 +61,7 @@ void stop(){
   RF.stop(brake);
   RB.stop(brake);
 }
+<<<<<<< HEAD
 void move_better(int tar){
 float x = 0;
 float err = tar - x;
@@ -74,14 +76,76 @@ while (fabs(err) > 0.25){
 }
 stop();
 }
+=======
+
+void Pturn(float targetDegrees) {
+  float heading = gyr.rotation(deg);
+  float error = targetDegrees - heading;
+  float Kp = 0.5;
+  float speed = Kp * error;
+
+  while(fabs(error)> 5){//tolerance
+
+  LF.spin(forward, -speed, pct);
+  LB.spin(forward, -speed, pct);
+  RF.spin(forward, speed, pct );
+  RB.spin(forward, speed, pct);
+wait
+  heading = gyr.rotation(deg);
+  error = heading - targetDegrees;
+  speed = error * Kp;
+
+  
+  }
+}
+
+
+
+void move_better(float tar){
+float p = M_PI;
+float d = 3.25;
+float g = 0.6;
+float x = 0;
+float err = tar - x;
+float kp = 3.0;
+float spe = kp*err;
+LF.resetPosition();
+while (fabs (err) > 0.5){
+  move(spe, spe, 10);
+  x = LF.position(rev)*p*d*g;
+  err = tar - x;
+  spe = kp*err;
+}
+stop();
+}
+void pri_gyr(){
+  Brain.Screen.printAt(10, 20, "Headings = %0.1f", gyr.heading(deg));
+  Brain.Screen.printAt(10, 40, "Rotaion = %0.1f", gyr.rotation(deg));
+  Brain.Screen.printAt(10, 60, "Yaw = %0.1f", gyr.yaw(deg));
+  Brain.Screen.printAt(10, 20, "Roll = %0.1f", gyr.roll(deg));
+  Brain.Screen.printAt(10, 20, "Pitch = %0.1f", gyr.pitch(deg));
+}
+void turn(float deeg){
+  if (deeg < 0){
+    
+    move(50, -  50, 30);
+  }
+  else if (deeg > 0){
+    while(gyr.rotation(deg)<deeg){
+    move(-50, 50, 30);
+    
+  }}
+  stop();
+  
+}
+>>>>>>> 96755f9f69753489ba905664c1a27c98f5374935
 /*---------------------------------------------------------------------------*/
 
 void pre_auton(void) {
+while(gyr.isCalibrating())wait(200, msec);
 
-  // All activities that occur before the competition starts
-  // Example: clearing encoders, setting servo positions, ...
+
 }
-
 /*---------------------------------------------------------------------------*/
 /*                                                                           */
 /*                              Autonomous Task                              */
@@ -93,17 +157,10 @@ void pre_auton(void) {
 /*---------------------------------------------------------------------------*/
 
 void autonomous(void) {
-  // ..........................................................................
-  
-    /*drawOnScreen();
-    wait(100, msec);
-    Brain.Screen.clearScreen();
-    drawShape();*/
-    move(50, 50, 750);
-    move(100, -100, 510);
-    move(50, 50, 750);
-    stop();
-
+// ..........................................................................
+Pturn(90);
+wait(1000, msec)  ;
+Pturn(-90);
 // ..........................................................................
 
 }
@@ -123,13 +180,13 @@ void usercontrol(void) {
     // This is the main execution loop for the user control program.
     // Each time through the loop your program should update motor + servo
     // values based on feedback from the joysticks.
-
+    pri_gyr();
     // ........................................................................
     // Insert user code here. This is where you use the joystick values to
     // update your motors, etc.
     // ........................................................................
 
-    wait(20, msec); // Sleep the task for a short amount of time to
+    wait(200, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
   }
 }

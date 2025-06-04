@@ -16,11 +16,11 @@ competition Competition;
 
 // define your global instances of motors and other devices here
 brain Brain;
-motor LFM(PORT2, ratio6_1, false);
-motor LBM(PORT12, ratio6_1, false);
-motor RFM(PORT5, ratio6_1, true);
-motor RBM(PORT11, ratio6_1, true);
-
+motor LFM(PORT2, ratio6_1, true);
+motor LBM(PORT12, ratio6_1, true);
+motor RFM(PORT5, ratio6_1, false);
+motor RBM(PORT11, ratio6_1, false);
+inertial gyropp (PORT4);
 float dia = 4.00;
 float GR = 1.00; 
 
@@ -61,11 +61,55 @@ void inchDrive(int inches){
   stop();
   Brain.Screen.printAt(10, 20, "distance= %0.1f", x); 
 }
+
+void gyroprint(){
+  float heading=gyropp.heading(deg);
+  float rotation=gyropp.rotation(deg);
+  Brain.Screen.clearScreen();
+  //Brain.Screen.printAt(10,20, "Heading = %0.1f", heading);
+  //Brain.Screen.printAt(10,40, "Rotation = %0.1f", rotation);
+  //Brain.Screen.printAt(10,60, "Pitch = %0.1f", gyropp.pitch(deg));
+  //Brain.Screen.printAt(10,80, "Yaw = %0.1f",gyropp.yaw(deg) );
+  //Brain.Screen.printAt(10,100, "Heading = %0.1f", gyropp.roll(deg));
+}
+
+void gyroturn(float degrees){
+
+  while(gyropp.rotation()<degrees){
+    moverobot(-50,50,30);
+   // wait(30,seconds);
+  }
+  stop();
+}
+
+void pturn(float degrees){
+  float heading = gyropp.rotation(deg);
+  float error = degrees - heading;
+  float Kp = 0.5;
+  float speed = error * Kp;
+  gyropp.resetRotation();
+
+  while(fabs(error)>5){
+  
+  moverobot(speed, - speed,30);
+  heading = gyropp.rotation(deg);
+  error = heading - degrees;
+  speed = error * Kp;
+
+  }
+  stop();
+}
+  
+
 void pre_auton(void) {
+
+while(gyropp.isCalibrating())wait(200,msec);
 
 
 
 }
+
+
 
 /*---------------------------------------------------------------------------*/
 /*                                                                           */
@@ -78,12 +122,12 @@ void pre_auton(void) {
 /*---------------------------------------------------------------------------*/
 
 void autonomous(void) {
- inchDrive(50);
- stop();
- moverobot(-150, 150, 1200);
- stop();
- inchDrive(50);
- stop();
+ 
+ pturn(90);
+ wait(1, sec);
+ pturn(-90);
+ gyroprint();
+ //Brain.Screen.printAt(10,20, "Rotation = 90.06");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -99,16 +143,10 @@ void autonomous(void) {
 void usercontrol(void) {
   // User control code here, inside the loop
   while (1) {
-    // This is the main execution loop for the user control program.
-    // Each time through the loop your program should update motor + servo
-    // values based on feedback from the joysticks.
+    
+    gyroprint();
 
-    // ........................................................................
-    // Insert user code here. This is where you use the joystick values to
-    // update your motors, etc.
-    // ........................................................................
-
-    wait(20, msec); // Sleep the task for a short amount of time to
+    wait(100, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
   }
 }
