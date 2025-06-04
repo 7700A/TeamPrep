@@ -3,7 +3,7 @@
 /*    Module:       main.cpp                                                  */
 /*    Author:       student                                                   */
 /*    Created:      4/17/2025, 4:44:40 PM                                     */
-/*    Description:  V5 project                                                */
+/*    Description:  teamprep bot                                              */
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
 
@@ -20,7 +20,8 @@ motor LF (PORT2, ratio6_1, false);
 motor LB (PORT12, ratio6_1, false);
 motor RF (PORT5, ratio6_1, true);
 motor RB (PORT11, ratio6_1, true);
-
+inertial rol (PORT3);
+/*lebron james is the goat slurp boba tea slurp tesla slurp fried chicken */
 float WD = 3.25;
 float GR = 0.75;
 
@@ -61,6 +62,43 @@ void inchDrive(float target) {
   }
   stopRobot();
   Brain.Screen.printAt(10,20, "distance = %0.1f" , x);
+}
+void printGyro() {
+  Brain.Screen.printAt(10,20, "Heading= %0.1f", rol.heading(deg));
+  Brain.Screen.printAt(10,40, "Rotation= %0.1f", rol.rotation(deg));
+  Brain.Screen.printAt(10,60, "Yaw= %0.1f", rol.yaw(deg));
+  Brain.Screen.printAt(10,80, "Roll= %0.1f", rol.roll(deg));
+   Brain.Screen.printAt(10,100, "Pitch= %0.1f", rol.pitch(deg));
+}
+
+
+void turn (float target){
+
+  if(target > 0){
+  while(rol.rotation(deg)<target){
+    robotDrive(50,-50,30);
+  }
+  }
+else if (target < 0) {
+  while(rol.rotation(deg)>target){
+    robotDrive(-50,50,30);
+}
+}
+  stopRobot();
+}
+
+void pTurn(float target ) {
+  float x = rol.rotation(deg);
+  float error = target - x;
+  float Kp = 0.45; 
+
+  float speed = 0;
+  while(fabs(error) > 5) {
+    speed = Kp * error;
+    robotDrive(-speed, speed, 30);
+    error = target - x;
+  }
+  stopRobot();
 }
   /*float x = 0;
   float error = inches - x;
@@ -114,7 +152,7 @@ int drawShapes () {
 /*---------------------------------------------------------------------------*/
 
 void pre_auton(void) {
-
+while(rol.isCalibrating())wait(0.2,sec);
   // All activities that occur before the competition starts
   // Example: clearing encoders, setting servo positions, ...
 }
@@ -131,9 +169,14 @@ void pre_auton(void) {
 
 void autonomous(void) {
   
-inchDrive(20);
+inchDrive(10);
+turn(90);
+wait(500,msec);
+turn(-90);
 
-
+//lebron can shoot 3s lebron can still dunk lebron is just having fun carrying his team
+/*i'm talking about lebron in the middle */
+/*yeah yeah give me some time "high pitch noise"*/
 //drive straight for time sharp u turn go back start stop robot
  //drawOnScreen ();
  //wait(1, sec);
@@ -167,8 +210,8 @@ void usercontrol(void) {
     // Insert user code here. This is where you use the joystick values to
     // update your motors, etc.
     // ........................................................................
-
-    wait(20, msec); // Sleep the task for a short amount of time to
+    printGyro();
+    wait(200, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
   }
 }
